@@ -1,0 +1,2330 @@
+openapi: 3.0.3
+info:
+  title: vos.io public API
+  description: |-
+    This is the public API to configure, operate and monitor the VOS.IO.  The API is organized in categories.  They are:
+
+    - live
+    - origin-engine
+    - externalAssetStorage
+    - fileTranscode
+    - notification
+    
+  termsOfService: https://www.vos.io/terms/
+  contact:
+    email: vosio_api@vos.io
+  license:
+    name: vos.io
+    url: https://www.vos.io/licenses/LICENSE-1.0.html
+  version: 1.0.0
+externalDocs:
+  description: vos.io Documentation
+  url: https://www.vos.io/doc
+servers: 
+  - url: https://www.vos.io/api
+tags:
+  - name: live
+  - name: origin-engine
+  - name: externalAssetStorage
+  - name: fileTranscode
+  - name: notification
+paths:
+  /live/v1/cloudsources:
+    get:
+      summary: List all the Cloud Sources
+      tags:
+        - live
+      description: list all the cloud sources
+      operationId: listCloudSources
+      parameters:
+        - in: query
+          name: name
+          schema:
+            type: string
+        - in: query
+          name: state
+          schema:
+            type: string
+            enum:
+            - Online
+            - Offline
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                description: list of Cloud Sources
+                readOnly: true
+                items:
+                    $ref: '#/components/schemas/CloudSource'
+        '400':
+          description: Failed to return list of Cloud Sources
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        '424':
+          description: Failed to return list of Cloud Sources because of failed dependency
+      security:
+      - vosio_auth:
+        - write:vosio
+        - read:vosio
+    post:
+      summary: Create a Cloud Source
+      tags:
+        - live
+      description: create a cloud source
+      operationId: createCloudSource
+      requestBody:
+        description: Create a new Cloud Source
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CloudSourceCreate'
+        required: true
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CloudSource'
+        '400':
+          description: Failed to create Cloud Source
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        '422':
+          description: Unprocessable entity to create Cloud Source 
+        '424':
+          description: Failed to create Cloud Source because dependency issue
+      security:
+        - vosio_auth:
+            - write:vosio
+            - read:vosio
+  /live/v1/cloudsources/{id}:
+    get:
+      summary: Get cloud source by Id
+      tags:
+        - live
+      description: Get cloud source by Id
+      operationId: getCloudSourcebyId
+      parameters:
+        - name: id
+          in: path
+          description: Cloud Source Id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CloudSource'
+        '400':
+          description: Failed to return Cloud Source
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: No cloud source with specified Id
+        '424':
+          description: Failed to get specific cloud source because of failed dependency    
+      security:
+      - vosio_auth:
+          - write:vosio
+          - read:vosio
+    put:
+      summary: Update a Cloud Source
+      tags:
+        - live
+      description: update a cloud source
+      operationId: updateCloudSource
+      parameters:
+      - name: id
+        in: path
+        description: Cloud Source Id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        description: Update an existing Cloud Source
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CloudSourceUpdate'
+        required: true
+      responses:
+        '201':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CloudSource'
+        '400':
+          description: Failed to update Cloud Source
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        '422':
+          description: Unprocessable entity to update Cloud Source 
+        '424':
+          description: Failed to update Cloud Source because dependency issue
+      security:
+        - vosio_auth:
+            - write:vosio
+            - read:vosio
+    delete:
+      summary: Delete a Cloud Source
+      tags:
+        - live
+      description: delete a cloud source
+      operationId: deleteCloudSource
+      parameters:
+        - name: id
+          in: path
+          description: Cloud Source Id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Cloud Source Deleted
+        '400':
+          description: Failed to delete Cloud Source
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden  
+        '404':
+          description: Cannot find Cloud Source
+        '424':
+          description: Failed to delete Cloud Source because dependency issue
+      security:
+      - vosio_auth:
+          - write:vosio
+          - read:vosio
+  /live/v1/cloudsources/{id}/offline:
+    put:
+      summary: Action to offline the Cloud Source by id
+      tags:
+        - live
+      description: offline the Cloud Source
+      operationId: offlineCloudSource
+      parameters:
+        - name: id
+          in: path
+          description: Cloud Source Id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Cloud Source Offline Success
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden   
+        '404':
+          description: Cloud Source Not Found
+        '422':
+          description: Unprocessable Entity e.g. Not at Online state
+        '424':
+          description: Failed to offline Cloud Source
+      security:
+        - vosio_auth:
+            - write:vosio
+            - read:vosio
+  /live/v1/cloudsources/{id}/online:
+    put:
+      summary: Action to online the cloud source by id
+      tags:
+        - live
+      description: online the Cloud Source
+      operationId: onlineCloudSource
+      parameters:
+        - name: id
+          in: path
+          description: Cloud Source Id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Cloud Source Online Success
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden   
+        '404':
+          description: Cloud Source Not Found
+        '422':
+          description: Unprocessable Entity e.g. Not at Offline state
+        '424':
+          description: Failed to online Cloud Source
+      security:
+        - vosio_auth:
+            - write:vosio
+            - read:vosio
+  /live/v1/images:
+    get:
+      summary: List all the images
+      tags:
+        - live
+      description: list all the images
+      operationId: listImages
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                description: list of Images
+                readOnly: true
+                items:
+                  $ref: '#/components/schemas/Images'
+        '400':
+          description: Failed to return list of images
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        '424':
+          description: Failed to return list of images
+      security:
+      - vosio_auth:
+        - write:vosio
+        - read:vosio
+    post:
+      summary: Create an image
+      tags:
+        - live
+      description: create an image
+      operationId: createImage
+      requestBody:
+        description: Create a new image
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Images'
+        required: true
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Images'
+        '400':
+          description: Failed to create Image
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '422':
+          description: Unprocessable entity to create image
+      security:
+        - vosio_auth:
+            - write:vosio
+            - read:vosio   
+  /live/v1/images/{id}:
+    get:
+      summary: Get image by Id
+      tags:
+        - live
+      description: Get image by Id
+      operationId: getImagebyId
+      parameters:
+        - name: id
+          in: path
+          description: Image Id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Images'
+        '400':
+          description: Failed to return image
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: No image with specified Id
+      security:
+      - vosio_auth:
+          - write:vosio
+          - read:vosio
+    put:
+      summary: Update an image
+      tags:
+        - live
+      description: update an image
+      operationId: updateImage
+      parameters:
+        - name: id
+          in: path
+          description: Image Id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        description: Create a new image
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Images'
+      responses:
+        '201':
+          description: Image Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Images'
+        '400':
+          description: Failed to update Image
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden  
+        '404':
+          description: Cannot find Image
+      security:
+      - vosio_auth:
+          - write:vosio
+          - read:vosio      
+    delete:
+      summary: Delete an image
+      tags:
+        - live
+      description: delete an image
+      operationId: deleteImage
+      parameters:
+        - name: id
+          in: path
+          description: Image Id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Image Deleted
+        '400':
+          description: Failed to delete Image
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden  
+        '404':
+          description: Cannot find Image
+      security:
+      - vosio_auth:
+          - write:vosio
+          - read:vosio           
+  /live/v1/events:
+    get:
+      summary: List all the live Events
+      tags:
+        - live
+      description: list all the live Events
+      operationId: listLiveEvents
+      parameters:
+        - in: query
+          name: id
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: name
+          schema:
+            type: string
+        - in: query
+          name: labels
+          schema:
+            type: string
+        - in: query
+          name: state
+          schema:
+            type: string
+            enum:
+            - Offline
+            - Allocating
+            - Preview
+            - Error
+            - Live
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                description: list of liveEvent with status
+                readOnly: true
+                items:
+                  type: object
+                  properties:
+                    id: 
+                      type: string
+                      format: uuid
+                    name:
+                      type: string
+                      example: Company Town Hall
+                    state:
+                      type: string
+                      example: Preview
+                      enum:
+                      - Offline
+                      - Allocating
+                      - Preview
+                      - Live
+                      - Finished
+                    input:
+                      type: object
+                      properties:
+                        cloudSourceId:
+                          type: string
+                          format: uuid
+                    goLiveTime:
+                      type: string
+                      format: datetime
+                      example: "2023-04-1T12:23:00+0000"
+                    endTime:
+                      type: string
+                      format: datetime
+                      example: "2023-04-1T15:33:00+0000"  
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+      security:
+      - vosio_auth:
+          - write:vosio
+          - read:vosio
+    post:
+      summary: Create a live Event
+      tags:
+        - live
+      description: create a live Event
+      operationId: createLiveEvent
+      requestBody:
+        description: Create a new live Event
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/liveEvent'
+                - $ref: '#/components/schemas/EventTimes'
+        required: true
+      responses:
+        '201':
+          description: Live Event Created
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/liveEvent'
+                  - $ref: '#/components/schemas/EventTimes'
+                  - $ref: '#/components/schemas/DestinationUrls'    
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden   
+        '405':
+          description: Invalid input
+      security:
+        - vosio_auth:
+            - write:vosio
+            - read:vosio
+  /live/v1/events/{id}:
+    get:
+      summary: Get a live Event details
+      tags:
+        - live
+      description: Get a live Event
+      operationId: getLiveEventDetails
+      parameters:
+        - name: id
+          in: path
+          description: live event Id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Live Event Details
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/liveEvent'
+                  - $ref: '#/components/schemas/EventTimes'
+                  - $ref: '#/components/schemas/DestinationUrls'    
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden   
+        '405':
+          description: Invalid input
+      security:
+        - vosio_auth:
+            - write:vosio
+            - read:vosio
+    put:
+      summary: Update a live Event
+      tags:
+        - live
+      description: update a live Event
+      operationId: updateLiveEvent
+      parameters:
+        - name: id
+          in: path
+          description: live event Id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        description: Update a live Event
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/liveEvent'
+                - $ref: '#/components/schemas/EventTimes'
+        required: true
+      responses:
+        '200':
+          description: Live Event Updated
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/liveEvent'
+                  - $ref: '#/components/schemas/EventTimes'
+                  - $ref: '#/components/schemas/DestinationUrls'    
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden   
+        '405':
+          description: Invalid input
+      security:
+        - vosio_auth:
+            - write:vosio
+            - read:vosio
+    delete:
+      summary: Delete a live Event
+      tags:
+        - live
+      description: delete a live Event
+      operationId: deleteLiveEvent
+      parameters:
+        - name: id
+          in: path
+          description: live event Id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Live Event Deleted
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden   
+        '405':
+          description: Invalid input
+      security:
+        - vosio_auth:
+            - write:vosio
+            - read:vosio
+  /live/v1/events/{id}/offline:
+    put:
+      summary: Action to offline the live event with id
+      tags:
+        - live
+      description: offline the live event
+      operationId: offlineLiveEvent
+      parameters:
+        - name: id
+          in: path
+          description: live event Id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Live Event Offline Success
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden   
+        '405':
+          description: Invalid input
+        '422':
+          description: Unprocessable Entity.  e.g. Not at Preview state
+      security:
+        - vosio_auth:
+            - write:vosio
+            - read:vosio   
+  /live/v1/events/{id}/preview:
+    put:
+      summary: Action to preview the live event with id
+      tags:
+        - live
+      description: preview the live event
+      operationId: previewLiveEvent
+      parameters:
+        - name: id
+          in: path
+          description: live event Id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Live Event Preview Success
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden   
+        '405':
+          description: Invalid input
+        '422':
+          description: Unprocessable Entity.  e.g. Not at Offline state
+      security:
+        - vosio_auth:
+            - write:vosio
+            - read:vosio
+  /live/v1/events/{id}/goLive:
+    put:
+      summary: Action to goLive the live event with id
+      tags:
+        - live
+      description: goLive the live event
+      operationId: goLiveLiveEvent
+      parameters:
+        - name: id
+          in: path
+          description: live event Id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Live Event goLive Success
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden   
+        '405':
+          description: Invalid input
+        '422':
+          description: Unprocessable Entity.  e.g. Not at Preview state
+      security:
+        - vosio_auth:
+            - write:vosio
+            - read:vosio
+  /live/v1/events/{id}/end:
+    put:
+      summary: Action to end the live event with id
+      tags:
+        - live
+      description: End the live event
+      operationId: endLiveEvent
+      parameters:
+        - name: id
+          in: path
+          description: live event Id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Live Event End Success
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden   
+        '405':
+          description: Invalid input
+        '422':
+          description: Unprocessable Entity.  e.g. Not at Live state
+      security:
+        - vosio_auth:
+            - write:vosio
+            - read:vosio
+  /live/v1/events/{id}/insertSlate:
+    put:
+      summary: Action to insert Slate image to the live event with id
+      tags:
+        - live
+      description: insert slate to the live event
+      operationId: insertSlateLiveEvent
+      parameters:
+        - name: id
+          in: path
+          description: live event Id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Live Event Insert Slate Success
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden   
+        '405':
+          description: Invalid input
+        '422':
+          description: Unprocessable Entity.  e.g. No slate to insert, or not at Offline/Preview/Live state
+      security:
+        - vosio_auth:
+            - write:vosio
+            - read:vosio
+  /live/v1/events/{id}/removeSlate:
+    put:
+      summary: Action to remove Slate image to the live event with id
+      tags:
+        - live
+      description: remove slate to the live event
+      operationId: removeSlateLiveEvent
+      parameters:
+        - name: id
+          in: path
+          description: live event Id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Live Event Remove Slate Success
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden   
+        '405':
+          description: Invalid input
+        '422':
+          description: Unprocessable Entity.  e.g. No slate to remove, or not at Offline/Preview/Live state
+      security:
+        - vosio_auth:
+            - write:vosio
+            - read:vosio
+  /notification/v1/settings:
+    get:
+      summary: Notification webhook setting
+      tags:
+        - notification
+      description: returns the notification settings
+      operationId: getNotificationSetting
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationSettings'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+      security:
+        - vosio_auth:
+            - write:vosio
+            - read:vosio
+    put:
+      summary: Update notification settings
+      tags:
+        - notification
+      description: returns the notification settings
+      operationId: updateNotificationSettings
+      requestBody:
+        description: Update notification settings
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NotificationSettings'
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationSettings'          
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden   
+        '405':
+          description: Invalid input
+      security:
+        - vosio_auth:
+            - write:vosio
+            - read:vosio
+  /live/v1/settings:
+    get:
+      summary: Get live event app settings
+      tags:
+        - live
+      description: returns the live settings
+      operationId: getLiveSettings
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                description: live app settings
+                properties:
+                  concurrentLiveEventSoftLimit:
+                    type: integer
+                    example: 100
+                    readOnly: true
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+      security:
+        - vosio_auth:
+            - write:vosio
+            - read:vosio
+    put:
+      summary: Update liveEvents settings
+      tags:
+        - live
+      description: returns the liveEvents settings
+      operationId: updateLiveEventSettings
+      requestBody:
+        description: Update Live settings
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LiveEventsSettings'
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LiveEventsSettings'          
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden   
+        '405':
+          description: Invalid input
+      security:
+        - vosio_auth:
+            - write:vosio
+            - read:vosio
+  /origin-engine/v1/streamingCapacity:
+    get:
+      summary: Get origin streaming capacity related to streaming units reserved.  The streaming units are shared with all Live Events and Dynamic Packaging outputs
+      tags:
+        - origin-engine
+      description: returns the streaming capacity consumption
+      operationId: getStreamingCapacityStreamingUnits
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/originEndpoint'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+      security:
+      - vosio_auth:
+          - write:vosio
+          - read:vosio
+    put:
+      summary: Update origin steraming capacity streaming units reserved
+      tags:
+        - origin-engine
+      description: returns the Streaming Unit settings
+      operationId: updateStreamingUnitSettings
+      requestBody:
+        description: Update Streaming Units settings
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/originEndpoint'
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/originEndpoint'          
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden   
+        '405':
+          description: Invalid input
+      security:
+        - vosio_auth:
+            - write:vosio
+            - read:vosio
+  /externalAssetStorage/v1/storageAccounts:
+    get:
+      summary: Get the list of dynamic packaging config
+      tags:
+        - externalAssetStorage
+      description: Dynamic Packaging is Package on the Fly (POTF) of multi-bitrate content to streaming formats.  It is tight to a storage account where mp4 or ismv files are located.  Each dynamic packaging configuration can have an account and packaging format/DRM configured.
+      operationId: listExternalAssetStorage
+      parameters:
+        - in: query
+          name: id
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: accountName
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                description: list of storageAccounts
+                readOnly: true
+                items:
+                  allOf:
+                  - $ref: '#/components/schemas/ExternalAssetStorage'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+      security:
+      - vosio_auth:
+          - write:vosio
+          - read:vosio
+    post:
+      summary: Create storage account config
+      tags:
+        - externalAssetStorage
+      description: Dynamic Packaging is Package on the Fly (POTF) of multi-bitrate content to streaming formats.  It is tight to a storage account where mp4 or ismv files are located.  Each dynamic packaging configuration can have an account and packaging format/DRM configured.
+      operationId: createExternalAssetStorageConfig
+      requestBody:
+        description: Create a new storage account config
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/ExternalAssetStorage'
+      responses:
+        '201':
+          description: Storage Config Created
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ExternalAssetStorage'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden   
+        '405':
+          description: Invalid input
+      security:
+        - vosio_auth:
+            - write:vosio
+            - read:vosio
+  /externalAssetStorage/v1/storageAccounts/{id}:
+    get:
+      summary: Get storage account details
+      tags:
+        - externalAssetStorage
+      description: get storage acccount details
+      operationId: getExternalStorageAccountDetails
+      parameters:
+        - name: id
+          in: path
+          description: Storage Account Id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Storage Account Details
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ExternalAssetStorage'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden   
+        '405':
+          description: Invalid input
+      security:
+        - vosio_auth:
+            - write:vosio
+            - read:vosio
+    put:
+      summary: Update Storage Account
+      tags:
+        - externalAssetStorage
+      description: update Storage Account Config
+      operationId: updateExternalAssetStorageConfig
+      parameters:
+        - name: id
+          in: path
+          description: Storage Account Id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        description: Update Storage Account Config
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/ExternalAssetStorage'
+      responses:
+        '200':
+          description: Dynamic Packaging Updated
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ExternalAssetStorage'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden   
+        '405':
+          description: Invalid input
+      security:
+        - vosio_auth:
+            - write:vosio
+            - read:vosio
+    delete:
+      summary: Delete a Storage Account Config
+      tags:
+        - externalAssetStorage
+      description: delete a storage account config
+      operationId: deleteExternalAssetStorageConfig
+      parameters:
+        - name: id
+          in: path
+          description: Storage Account Id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Storage Account Config Deleted
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden   
+        '405':
+          description: Invalid input
+      security:
+        - vosio_auth:
+            - write:vosio
+            - read:vosio
+  /externalAssetStorage/v1/storageAccounts/{id}/playbackUrl:
+    get:
+      summary: Get playback URL
+      tags:
+        - externalAssetStorage
+      description: get playback URL
+      operationId: getPlaybackUrl
+      parameters:
+        - name: id
+          in: path
+          description: Playback URL for the storage account
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Storage Account Details
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/VodDestinationUrls'
+                readOnly: true  
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden   
+        '405':
+          description: Invalid input
+      security:
+        - vosio_auth:
+            - write:vosio
+            - read:vosio
+  /externalAssetStorage/v1/packagingProfileAdvanced:
+    get:
+      summary: Show External Asset Storage Packaging Profile Config.  It applies to all Storage Accounts
+      tags:
+        - externalAssetStorage
+      description: show packaging profile config
+      operationId:
+        getExternalAssetStoragePackagingProfileConfig360
+      responses:
+        '200':
+          description: External Asset Storage Packaging Profile Config
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/PackageProfile360'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden   
+      security:
+        - vos360_auth:
+            - write:vos360
+            - read:vos360     
+    put:
+      summary: Update External Asset Storage Packaging Profile Config
+      tags:
+        - externalAssetStorage
+      description: update packaging profile config
+      operationId: updateExternalAssetStoragePackagingProfileConfig360
+      requestBody:
+        description: Update Storage Account Config
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/PackageProfile360'
+      responses:
+        '200':
+          description: Dynamic Packaging Offline Success
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden   
+        '405':
+          description: Invalid input
+        '422':
+          description: Unprocessable Entity.  e.g. Not at Online state
+      security:
+        - vos360_auth:
+            - write:vos360
+            - read:vos360    
+  /externalAssetStorage/v1/packagingProfile:
+    get:
+      summary: Show External Asset Storage Packaging Profile Config.  It applies to all Storage Accounts
+      tags:
+        - externalAssetStorage
+      description: show packaging profile config
+      operationId:
+        getExternalAssetStoragePackagingProfileConfigIo
+      responses:
+        '200':
+          description: External Asset Storage Packaging Profile Config
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/PackageProfileIo'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden   
+      security:
+        - vosio_auth:
+            - write:vosio
+            - read:vosio     
+    put:
+      summary: Update External Asset Storage Packaging Profile Config
+      tags:
+        - externalAssetStorage
+      description: update packaging profile config
+      operationId: updateExternalAssetStoragePackagingProfileConfigIo
+      requestBody:
+        description: Update Storage Account Config
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/PackageProfileIo'
+      responses:
+        '200':
+          description: Dynamic Packaging Offline Success
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden   
+        '405':
+          description: Invalid input
+        '422':
+          description: Unprocessable Entity.  e.g. Not at Online state
+      security:
+        - vosio_auth:
+            - write:vosio
+            - read:vosio   
+  /fileTranscode/v1/jobs:
+    get:
+      summary: Get the list of jobs
+      tags:
+        - fileTranscode
+      description: File Transcode is job than transcode single bitrate source media into multi-bitrates media that can be used for playback with Dynamic Packaging as OTT streaming formats
+      operationId: listFileTranscodeJobs
+      parameters:
+        - in: query
+          name: id
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: outputAssetName
+          schema:
+            type: string
+        - in: query
+          name: labels
+          schema:
+            type: string
+        - in: query
+          name: state
+          schema:
+            type: string
+            enum:
+            - Downloading
+            - Transcoding
+            - Uploadiing
+            - Completed
+            - Failed
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                description: list of file transcode jobs with status
+                readOnly: true
+                items:
+                  type: object
+                  properties:
+                    id: 
+                      type: string
+                      format: uuid
+                    outputFilename:
+                      type: string
+                      example: internalAffairsHD
+                    state:
+                      type: string
+                      example: Transcoding
+                      enum:
+                      - Downloading
+                      - Transcoding
+                      - Uploading
+                      - Completed
+                      - Failed
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+      security:
+      - vosio_auth:
+          - write:vosio
+          - read:vosio
+    post:
+      summary: Create File Transcoding Job
+      tags:
+        - fileTranscode
+      description: File Transcoding Job turns a single bitrate media into multi-bitrates content files for Dynamic Packaging into OTT streaming formats
+      operationId: createFileTranscodeJob
+      requestBody:
+        description: Create a new file transcoding job
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/FileTranscodeJob'
+
+        required: true
+      responses:
+        '201':
+          description: File Transcoding Job Created
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/FileTranscodeJob'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden   
+        '405':
+          description: Invalid input
+      security:
+        - vosio_auth:
+            - write:vosio
+            - read:vosio 
+  /fileTranscode/v1/jobs/{id}:
+    get:
+      summary: Get file transcode job details
+      tags:
+        - fileTranscode
+      description: Get file transcode job
+      operationId: getFileTranscodeJobDetails
+      parameters:
+        - name: id
+          in: path
+          description: file transcode job Id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: File Transcode Job Details
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/FileTranscodeJob'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden   
+        '405':
+          description: Invalid input
+      security:
+        - vosio_auth:
+            - write:vosio
+            - read:vosio
+    delete:
+      summary: Delete a file transcode job
+      tags:
+        - fileTranscode
+      description: delete a File Transcode Job
+      operationId: deleteFileTranscodeJob
+      parameters:
+        - name: id
+          in: path
+          description: File Transcode Job Id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: File Transcode Job Deleted
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden   
+        '405':
+          description: Invalid input
+      security:
+        - vosio_auth:
+            - write:vosio
+            - read:vosio  
+  /fileTranscode/v1/jobs/{id}/state:
+    get:
+      summary: get File Transcode job state
+      tags:
+        - fileTranscode
+      description: get file transcode job state
+      operationId: getFileTranscodeJobState
+      parameters:
+        - name: id
+          in: path
+          description: file transcode job Id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: File Transcode Job State
+          content:
+            application/json:
+              schema:
+                type: string
+                enum:
+                  - Downloading
+                  - Transcoding
+                  - Uploading
+                  - Completed
+                  - Failed
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden   
+        '405':
+          description: Invalid input
+      security:
+        - vosio_auth:
+            - write:vosio
+            - read:vosio
+components:
+  schemas:
+    liveEvent:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 34fd01fc-fee6-11ed-be56-0242ac120002
+          readOnly: true
+        name:
+          type: string
+          description: simple name of the Event
+          example: College Football Final 2023
+        labels:
+          type: array
+          items:
+            type: string
+            description: multiple labels to label the event
+        state:
+          type: string
+          description: liveEvent State
+          example: Preview
+          readOnly: true
+          enum:
+            - Offline
+            - Allocating
+            - Preview
+            - Live
+            - Finished
+        input:
+          type: object
+          description: liveEvent Cloud Source
+          properties:
+            cloudSourceId:
+              type: string
+              format: uuid
+              description: Cloud Source Id
+          required: [id]
+        transcodingProfile:
+          type: string
+          description: the encoding profile for this liveEvent
+          example: Standard
+          enum:
+          - Standard
+          - Premium
+          - Passthrough
+        liveTranscription:
+          type: object
+          description: speech to text transcription to insert to CEA608/708
+          properties:
+            enableLiveTranscription:
+              type: boolean
+              example: true
+            language:
+              type: string
+              example: eng
+        inputLossSlate:
+          type: object
+          description: slate image to cover the screen when input signal loss when transcoding is in used
+          properties:
+            enableInputLossSlate:
+              type: boolean
+              example: true
+            imageId:
+              type: string
+              format: uuid
+        liveSlate:
+          type: object
+          description: slate image to cover the screen when event is live.  Use action to trigger slate on/off.  (insertSlate and removeSlate).
+          properties:
+            imageId:
+              type: string
+              format: uuid
+        packagingProfile:
+          type: string
+          example: Standard
+          enum:
+          - Standard
+          - Premium
+        publishName:
+          type: string
+          description: Name used in the URLs to identify the event.  This needs to be unique and no space and special characters.  If not specified, generated id will be used in URL.
+          example: footballFinal2023
+          minLength: 1
+          maxLength: 50
+          pattern: '([a-zA-Z0-9-_:.])+'
+        output:
+          type: array
+          description: list of packages profile configuration
+          items:
+            type: object
+            description: each output is a package
+            properties:
+              destinationOutputId:
+                type: string
+                format: uuid
+                readOnly: true
+              encryptionMethod:
+                type: string
+                example: CENC 
+                enum:
+                - Clear
+                - AES
+                - Fairplay
+                - CENC
+              packageType:
+                type: string
+                example: cmaf-dash
+                enum:
+                  - hls-cmaf
+                  - dash-cmaf
+                  - hls-ts
+                  - dash
+                  - ll-hls
+                  - dash-ll
+                  - hss
+                  - rtmp-push
+              rtmpPushConfig:
+                type: object
+                description: configuration parameters for RTMP
+                properties:
+                  enableRtmps:
+                    type: boolean
+                    example: false
+                  enableActiveStandby:
+                    type: boolean
+                    example: false
+                  primaryPublishingPoint:
+                    type: object
+                    properties:
+                      hostname:
+                        type: string
+                        format: url
+                      port:
+                        type: number
+                        example: 1935
+                        minimum: 0
+                        maximum: 65535
+                      username:
+                        type: string
+                      password:
+                        type: string
+                        writeOnly: true
+                      streamName:
+                        type: string
+                  secondaryPublishingPoint:
+                    type: object
+                    properties:
+                      hostname:
+                        type: string
+                        format: url
+                      port:
+                        type: number
+                        example: 1935
+                        minimum: 0
+                        maximum: 65535
+                      username:
+                        type: string
+                      password:
+                        type: string
+                        writeOnly: true
+                      streamName:
+                        type: string     
+              embeddedSubtitle:
+                type: string
+                description: converts CEA608/708 to webvtt, imsc1 or kept at SEI
+                example: webvtt
+                enum:
+                  - passthrough
+                  - webvtt
+                  - imsc1
+            required: [package,encryptionMethod]
+        addOns:
+          type: object
+          description: addon for optional features
+          properties:
+            logoAddon:
+              type: object
+              description: object to store logo for overlay on video
+              properties:
+                imageId:
+                  type: string
+                  format: uuid
+                  description: Id of the logo png image
+                placement:
+                  type: string
+                  enum:
+                    - BOTTOM_LEFT
+                    - BOTTOM_RIGHT
+                    - TOP_RIGHT
+                    - TOP_LEFT
+                horizontalOffset:
+                  type: integer
+                  description: horizontal offset relative to placement in pixel
+                verticalOffset:
+                  type: integer
+                  description: veritcal offset relative to placement in pixel
+      required: [name, id, transcodingProfile, input, output]
+    Images:
+      type: object
+      required: [ url ] 
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        url:
+          type: string
+          format: url
+        username:
+          type: string
+        password:
+          type: string
+          writeOnly: true
+        labels:
+          type: array
+          items:
+            type: string
+            description: multiple labels to label the image
+    EventTimes:
+      type: object
+      properties:
+        goLiveTime:
+          readOnly: true
+          type: string
+          format: datetime
+          example: "2023-04-1T12:23:00+0000"
+        endTime:
+          readOnly: true
+          type: string
+          format: datetime
+          example: "2023-04-1T15:33:00+0000"        
+    DestinationUrls:
+      type: object
+      properties:
+        playbackUrls:
+          type: object
+          description: list of URLs
+          properties:
+            cdnUrls:
+              type: object
+              description: list of CDN URL endpoints
+              properties:
+                cmafDashUrl:
+                  type: string
+                  format: url
+                  description: CDN url for cmaf dash output
+                cmafHlsUrl:
+                  type: string
+                  format: url
+                  description: CDN url for cmaf hls output
+                hlsTsUrl:
+                  type: string
+                  format: url
+                  description: CDN url for hls ts output
+                dashUrl:
+                  type: string
+                  format: url
+                  description: CDN url for dash output
+                ssUrl:
+                  type: string
+                  format: url
+                  description: CDN url for http smooth streaming output
+                llHlsUrl:
+                  type: string
+                  format: url
+                  description: CDN url for low latency HLS output
+                dashLlUrl:
+                  type: string
+                  format: url
+                  description: CDN url for dash low latency output
+                  readOnly: true
+            originUrls:
+              type: object
+              description: list of Origin URL endpoints
+              properties:
+                cmafDashUrl:
+                  type: string
+                  format: url
+                  description: Origin url for cmaf dash output
+                  readOnly: true
+                cmafHlsUrl:
+                  type: string
+                  format: url
+                  description: Origin url for cmaf hls output
+                  readOnly: true
+                hlsTsUrl:
+                  type: string
+                  format: url
+                  description: Origin url for hls ts output
+                  readOnly: true
+                dashUrl:
+                  type: string
+                  format: url
+                  description: Origin url for dash output
+                  readOnly: true
+                ssUrl:
+                  type: string
+                  format: url
+                  description: Origin url for http smooth streaming output
+                  readOnly: true
+                llHlsUrl:
+                  type: string
+                  format: url
+                  description: Origin url for low latency HLS output
+                  readOnly: true
+                dashLlUrl:
+                  type: string
+                  format: url
+                  description: Origin url for dash low latency output
+                  readOnly: true
+    VodDestinationUrls:
+      type: object
+      properties:
+        playbackUrls:
+          type: object
+          description: list of URLs
+          properties:
+            cdnUrls:
+              type: object
+              description: list of CDN URL endpoints
+              properties:
+                cmafDashUrl:
+                  type: string
+                  format: url
+                  description: CDN url for cmaf dash output
+                  example: https://<domain-name>/DynamicPackaging_<storage-account-id>/dash-cmaf/<asset-id>/<asset-name>/manifest.mpd
+                cmafHlsUrl:
+                  type: string
+                  format: url
+                  description: CDN url for cmaf hls output
+                  example: https://<domain-name>/DynamicPackaging_<storage-account-id>/hls-cmaf/<asset-id>/<asset-name>/manifest.mpd
+                hlsTsUrl:
+                  type: string
+                  format: url
+                  description: CDN url for hls ts output
+                  example: https://<domain-name>/DynamicPackaging_<storage-account-id>/hls-sts/<asset-id>/<asset-name>/manifest.mpd
+                dashUrl:
+                  type: string
+                  format: url
+                  description: CDN url for dash output
+                  example: https://<domain-name>/DynamicPackaging_<storage-account-id>/dash/<asset-id>/<asset-name>/manifest.mpd
+                ssUrl:
+                  type: string
+                  format: url
+                  description: CDN url for http smooth streaming output
+                  example: https://<domain-name>/DynamicPackaging_<storage-account-id>/hss/<asset-id>/<asset-name>/manifest.mpd
+            originUrls:
+              type: object
+              description: list of Origin URL endpoints
+              properties:
+                cmafDashUrl:
+                  type: string
+                  format: url
+                  description: Origin url for cmaf dash output
+                  readOnly: true
+                cmafHlsUrl:
+                  type: string
+                  format: url
+                  description: Origin url for cmaf hls output
+                  readOnly: true
+                hlsTsUrl:
+                  type: string
+                  format: url
+                  description: Origin url for hls ts output
+                  readOnly: true
+                dashUrl:
+                  type: string
+                  format: url
+                  description: Origin url for dash output
+                  readOnly: true
+                ssUrl:
+                  type: string
+                  format: url
+                  description: Origin url for http smooth streaming output
+                  readOnly: true
+    LiveEventsSettings:
+      type: object
+      description: live app settings
+      properties:
+        concurrentLiveEventSoftLimit:
+          type: integer
+          example: 100
+    NotificationSettings:
+      type: object
+      description: setting webhook url for notification
+      properties:
+        NotificationsWebhook:
+          type: object
+          properties:
+            url:
+              type: string
+              format: url
+            customHeader:
+              type: string
+    originEndpoint:
+      type: object
+      properties:
+        minStreamingUnits:
+          type: integer
+          description: the minimum number of streaming units configured for this vos.io system
+          example: 2
+          minimum: 0
+          maximum: 100
+        maxStreamingUnits:
+          type: integer
+          description: the maximum number of streaming units configured for this vos.io system
+          example: 10
+          minimum: 0
+          maximum: 100
+        activeStreamingUnits:
+          type: integer
+          description: the number of streaming units actively running on this vos.io system
+          example: 3
+          minimum: 0
+          maximum: 100
+          readOnly: true
+    ExternalAssetStorage:
+      type: object
+      properties:
+        id: 
+          type: string
+          format: '([a-zA-Z0-9-_:.])+'
+          example: devstorage
+        connectionString:
+          type: string
+          example: DefaultEndpointsProtocol=https;AccountName=devstorage;AccountKey=*****;EndpointSuffix=core.windows.net
+      required: [accountName, accountKey, endpoint]
+    PackageProfile360:
+      description: Dynamic Packaging Output format/drm
+      type: object
+      properties:
+        cacheMaxAge: 
+          description: default to 3 days if not provided
+          type: integer
+          example: 259200
+        drmSettings:
+          type: object
+          properties:
+            perPackageDrmSystemIdList:
+              type: array
+              items:
+                type: object
+                properties:
+                  packageName:
+                    type: string
+                    example: dash
+                    enum:
+                    - hls-ts
+                    - hls-cmaf
+                    - dash
+                    - dash-cmaf
+                    - hss
+                  drmSystemId:
+                    type: string
+              required: [packageName,drmSystemId]
+            perPackageResourceIdList:
+              type: array
+              items:
+                type: object
+                properties:
+                  packageName:
+                    type: string
+                    example: dash
+                    enum:
+                    - hls-ts
+                    - hls-cmaf
+                    - dash
+                    - dash-cmaf
+                    - hss
+                  resourceId:
+                    type: string
+              required: [packageName,resourceId]
+        destinationProfileId:
+          type: string
+          format: uuid
+    PackageProfileIo:
+      description: Dynamic Packaging Output format/drm
+      type: object
+      properties:
+        cacheMaxAge: 
+          description: default to 3 days if not provided
+          type: integer
+          example: 259200
+        drmSettings:
+          type: array
+          items:
+            type: object
+            properties:
+              packageName:
+                type: string
+                example: dash
+                enum:
+                - hls-ts
+                - hls-cmaf
+                - dash
+                - dash-cmaf
+                - hss
+              encryptionMethod:
+                type: string
+                example: CENC
+                default: Clear
+                enum:
+                - Clear
+                - AES
+                - Fairplay
+                - CENC
+            required: [packageName,encryptionMethod]
+    FileTranscodeJob:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 34fd01fc-fee6-11ed-be56-0242ac120002
+          readOnly: true
+        outputAssetName:
+          type: string
+          description: Output filename of the transcoded output
+          example: internalAffairsHD
+        outputAssetId:
+          type: string
+          format: uuid
+          description: Output asset ID of the transcoded output used for Dynamic Packaging
+          example: a46f9196-198d-11ee-be56-0242ac120002
+          readOnly: true
+        labels:
+          type: array
+          items:
+            type: string
+            description: multiple labels to label the file transcode job
+        state:
+          type: string
+          description: File Transcoding Job state
+          example: Transcoding
+          readOnly: True
+          enum:
+            - Pending
+            - Downloading
+            - Transcoding
+            - Uploading
+            - Completed
+            - Failed
+        transcodeProfile:
+          type: string
+          description: the encoding profile for this file job
+          example: Standard
+          enum:
+          - Standard
+          - Premium
+          - Passthrough
+        liveTranscription:
+          type: object
+          description: speech to text transcription to insert to CEA608/708
+          properties:
+            enableLiveTranscription:
+              type: boolean
+              example: true
+            language:
+              type: string
+              example: eng  
+        inputLocation:
+          type: object
+          description: storage account of the source media
+          properties:
+            filename:
+              type: string
+              example: internalAffairsHD35M.mxf
+            storage:
+              description: storage account information
+              type: object
+              properties:
+                accountName:
+                  type: string
+                  example: devstoreaccount1
+                accountKey:
+                  type: string
+                  example: Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;
+                objectStorageEndpoint:
+                  type: string
+                  example: https://collegesports.blob.core.windows.net/devInputContentContainer
+        outputLocation:
+            type: object
+            description: storage account of the transcoded output
+            properties:
+              storage:
+                description: storage account information
+                type: object
+                properties:
+                  accountName:
+                    type: string
+                    example: devstoreaccount1
+                  accountKey:
+                    type: string
+                    example: Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;
+                  objectStorageEndpoint:
+                    type: string
+                    example: https://collegesports.blob.core.windows.net/devOutputContentContainer 
+        AddOns:
+          type: object
+          description: Add on 
+          properties:
+            logoAddon:
+              type: object
+              description: object to store logo for overlay on video
+              properties:
+                imageUrl:
+                  type: string
+                  format: url
+                  description: url to download the logo png image
+                placement:
+                  type: string
+                  enum:
+                    - BOTTOM_LEFT
+                    - BOTTOM_RIGHT
+                    - TOP_RIGHT
+                    - TOP_LEFT
+                horizontalOffset:
+                  type: integer
+                  description: horizontal offset relative to placement in pixel
+                verticalOffset:
+                  type: integer
+                  description: veritcal offset relative to placement in pixel
+    CloudSourceCreate:
+      type: object
+      properties:
+        name:
+          type: string
+          example: Channel1-Primary
+        cryptoSetting:
+          properties:
+            key:
+              type: string
+            method:
+              type: string
+              example: NONE
+              enum:
+                - NONE
+                - AES_128
+                - AES_192
+                - AES_256
+        labels:
+          type: array
+          items:
+            type: string
+        maxOutputConnections: 
+          type: integer
+          example: 9
+        protocol:
+          type: string
+          example: SRT
+          enum: 
+            - SRT
+            - RTMP
+        redundancyMode:
+          type: string
+          enum:
+           - NONE
+           - ACTIVE-ACTIVE
+           - ACTIVE-STANDBY
+        streamCount:
+          type: integer
+          maximum: 20
+          example: 0
+    CloudSourceUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+    CloudSource:
+      type: object
+      properties:
+        backupIngress:
+          type: object
+          properties:
+            cryptoSetting:
+              type: object
+              properties:
+                key:
+                  type: string
+                method:
+                  type: string
+                  example: NONE
+                  enum:
+                    - NONE
+                    - AES_128
+                    - AES_192
+                    - AES_256
+            platform:
+              type: string
+              example: Azure
+              readOnly: true
+            protocol: 
+              type: string
+              example: srt
+            region: 
+              type: string
+              readOnly: true
+            streamCount: 
+              type: integer
+              example: 0
+            url: 
+              type: string
+              format: url
+              readOnly: true
+        ingress:
+          type: object
+          required: [protocol]
+          properties:
+            cryptoSetting:
+              type: object
+              properties:
+                key: 
+                  type: string
+                method:
+                  type: string
+                  enum:
+                   - NONE
+                   - AES_128
+                   - AES_192
+                   - AES_256
+            platform:
+              type: string
+              example: Azure
+              readOnly: true
+            protocol: 
+              type: string
+              example: srt
+            region: 
+              type: string
+              readOnly: true
+            streamCount: 
+              type: integer
+              example: 0
+            url: 
+              type: string
+              format: url
+              readOnly: true
+        labels:
+          type: array
+          items:
+            type: string
+        maxOutputConnections: 
+          type: integer
+          example: 9
+        name: 
+          type: string
+          example: Channel1-Primary
+        id: 
+          type: string
+          format: uuid
+          readOnly: true
+        redundancyMode: 
+          type: string
+          enum:
+           - NONE
+           - ACTIVE-ACTIVE
+           - ACTIVE-STANDBY
+        state: 
+          type: string
+          readOnly: true
+          enum:
+           - Online
+           - Offline
+        statistics:
+          type: object
+          readOnly: true
+          properties:
+            egressStatistics:
+              type: object
+              properties:
+                egressSessionCount: 
+                  type: integer
+                  example: 0
+                  readOnly: true
+                egressThroughputInMbps: 
+                  type: integer
+                  example: 0
+                  readOnly: true
+        version: 
+          type: string
+      required: [name]
+  requestBodies:
+    liveEventRequest:
+      description: liveEvent object that needs to be added
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/liveEvent'
+    eventScheduleRequest:
+      description: event object that needs to be added
+      content:
+         application/json:
+          schema:
+            $ref: '#/components/schemas/EventTimes'
+  securitySchemes:
+    vosio_auth:
+      type: oauth2
+      flows:
+        implicit:
+          authorizationUrl: https://vos.io/oauth/authorize
+          scopes:
+            write:vosio: modify vos.io config
+            read:vosio: read your vos.io config
+    vos360_auth:
+      type: oauth2
+      flows:
+        implicit:
+          authorizationUrl: https://vos360.vos360.video/oauth/authorize
+          scopes:
+            write:vos360: modify vos360 config
+            read:vos360: read your vos360 config

@@ -1,13 +1,13 @@
 openapi: 3.0.3
 info:
-  title: vos.io public API
+  title: vos.io public API (DRAFT)
   description: |-
     This is the public API to configure, operate and monitor the VOS.IO.  The API is organized in categories.  They are:
 
     - live
     - origin-engine
     - externalAssetStorage
-    - fileTranscode
+    - fileTranscodexxx
     - notification
     
   termsOfService: https://www.vos.io/terms/
@@ -16,7 +16,7 @@ info:
   license:
     name: vos.io
     url: https://www.vos.io/licenses/LICENSE-1.0.html
-  version: 1.0.0
+  version: 1.0.1
 externalDocs:
   description: vos.io Documentation
   url: https://www.vos.io/doc
